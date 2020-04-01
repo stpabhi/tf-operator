@@ -9,6 +9,7 @@
   "definitions": {
     "v1.JobCondition": {
       "description": "JobCondition describes the state of the job at a certain point.",
+      "type": "object",
       "required": [
         "type",
         "status"
@@ -42,6 +43,7 @@
     },
     "v1.JobStatus": {
       "description": "JobStatus represents the current observed state of the training Job.",
+      "type": "object",
       "required": [
         "conditions",
         "replicaStatuses"
@@ -77,6 +79,7 @@
     },
     "v1.ReplicaSpec": {
       "description": "ReplicaSpec is a description of the replica",
+      "type": "object",
       "properties": {
         "replicas": {
           "description": "Replicas is the desired number of replicas of the given template. If unspecified, defaults to 1.",
@@ -95,6 +98,7 @@
     },
     "v1.ReplicaStatus": {
       "description": "ReplicaStatus represents the current observed state of the replica.",
+      "type": "object",
       "properties": {
         "active": {
           "description": "The number of actively running pods.",
@@ -113,15 +117,55 @@
         }
       }
     },
+    "v1.RunPolicy": {
+      "description": "RunPolicy encapsulates various runtime policies of the distributed training job, for example how to clean up resources and how long the job can stay active.",
+      "type": "object",
+      "properties": {
+        "activeDeadlineSeconds": {
+          "description": "Specifies the duration in seconds relative to the startTime that the job may be active before the system tries to terminate it; value must be positive integer.",
+          "type": "integer",
+          "format": "int64"
+        },
+        "backoffLimit": {
+          "description": "Optional number of retries before marking this job failed.",
+          "type": "integer",
+          "format": "int32"
+        },
+        "cleanPodPolicy": {
+          "description": "CleanPodPolicy defines the policy to kill pods after the job completes. Default to Running.",
+          "type": "string"
+        },
+        "schedulingPolicy": {
+          "description": "SchedulingPolicy defines the policy related to scheduling, e.g. gang-scheduling",
+          "$ref": "#/definitions/v1.SchedulingPolicy"
+        },
+        "ttlSecondsAfterFinished": {
+          "description": "TTLSecondsAfterFinished is the TTL to clean up jobs. It may take extra ReconcilePeriod seconds for the cleanup, since reconcile gets called periodically. Default to infinite.",
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1.SchedulingPolicy": {
+      "description": "SchedulingPolicy encapsulates various scheduling policies of the distributed training job, for example `minAvailable` for gang-scheduling.",
+      "type": "object",
+      "properties": {
+        "minAvailable": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
     "v1.TFJob": {
       "description": "Represents a TFJob resource.",
+      "type": "object",
       "properties": {
         "apiVersion": {
-          "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+          "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
           "type": "string"
         },
         "kind": {
-          "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+          "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
           "type": "string"
         },
         "metadata": {
@@ -133,19 +177,20 @@
           "$ref": "#/definitions/v1.TFJobSpec"
         },
         "status": {
-          "description": "Most recently observed status of the TFJob. Read-only (modified by the system).",
+          "description": "Most recently observed status of the TFJob. Populated by the system. Read-only.",
           "$ref": "#/definitions/v1.JobStatus"
         }
       }
     },
     "v1.TFJobList": {
       "description": "TFJobList is a list of TFJobs.",
+      "type": "object",
       "required": [
         "items"
       ],
       "properties": {
         "apiVersion": {
-          "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+          "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
           "type": "string"
         },
         "items": {
@@ -156,7 +201,7 @@
           }
         },
         "kind": {
-          "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+          "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
           "type": "string"
         },
         "metadata": {
@@ -167,6 +212,7 @@
     },
     "v1.TFJobSpec": {
       "description": "TFJobSpec is a desired state description of the TFJob.",
+      "type": "object",
       "required": [
         "tfReplicaSpecs"
       ],
@@ -184,6 +230,10 @@
         "cleanPodPolicy": {
           "description": "Defines the policy for cleaning up pods after the TFJob completes. Defaults to Running.",
           "type": "string"
+        },
+        "enableDynamicWorker": {
+          "description": "A switch to enable dynamic worker",
+          "type": "boolean"
         },
         "tfReplicaSpecs": {
           "description": "A map of TFReplicaType (type) to ReplicaSpec (value). Specifies the TF cluster configuration. For example,\n  {\n    \"PS\": ReplicaSpec,\n    \"Worker\": ReplicaSpec,\n  }",
